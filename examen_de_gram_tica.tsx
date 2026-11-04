@@ -303,7 +303,7 @@ export default function App() {
     setCurrentView('quiz');
   };
 
-  // Guardar estado al salir al menú
+  // Guardar estado al salir al menu
   const handleBackToMenu = () => {
     if (currentView === 'quiz') {
       setSavedSessions(prev => ({
