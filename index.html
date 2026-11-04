@@ -1,498 +1,250 @@
-import React, { useState, useEffect } from 'react';
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz de Gramática - Inglés</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 font-sans p-4 md:p-8">
+    <div id="root" class="max-w-3xl mx-auto"></div>
 
-// === BASE DE DATOS DE PREGUNTAS ===
-const quizData = {
-  'will-going-to': {
-    title: 'Will vs Going To',
-    questions: [
-      {
-        question: "Look at those dark clouds! It ___ soon.",
-        options: ["is going to rain", "will rain", "rains"],
-        correct: "is going to rain",
-        explanation: "'is going to' se usa para predicciones basadas en evidencia física presente (las nubes oscuras). 'will' se usaría si solo fuera una creencia sin evidencia visual inmediata."
-      },
-      {
-        question: "I don't have my wallet. - Don't worry, I ___ pay for the lunch.",
-        options: ["am going to", "will", "pay"],
-        correct: "will",
-        explanation: "'will' se usa para decisiones rápidas o espontáneas tomadas en el momento de hablar. No había un plan previo de pagar su almuerzo, surgió en el momento."
-      },
-      {
-        question: "We ___ visit our grandparents next weekend. We bought the tickets.",
-        options: ["will", "are going to", "visit"],
-        correct: "are going to",
-        explanation: "Como ya se compraron los boletos, es un plan o intención definitiva en el futuro. Para planes ya hechos se utiliza 'going to'."
-      },
-      {
-        question: "I think humanity ___ live on Mars in the future.",
-        options: ["will", "is going to", "lives"],
-        correct: "will",
-        explanation: "Usamos 'will' para predicciones generales, suposiciones o creencias sobre el futuro lejano, especialmente después de verbos como 'think' o 'believe'."
-      },
-      {
-        question: "Watch out! You ___ drop those plates!",
-        options: ["will", "are going to", "are dropping"],
-        correct: "are going to",
-        explanation: "Es una advertencia basada en una situación inminente que se está viendo ocurrir. 'Going to' es correcto aquí porque la acción está a punto de suceder."
-      },
-      {
-        question: "I promise I ___ tell anyone your secret.",
-        options: ["won't", "am not going to", "don't"],
-        correct: "won't",
-        explanation: "Para promesas, juramentos o rechazos, siempre usamos 'will' (o su forma negativa 'won't')."
-      },
-      {
-        question: "They ___ get married in July. The church is booked.",
-        options: ["will", "are going to", "get"],
-        correct: "are going to",
-        explanation: "Tienen la iglesia reservada, por lo que es un plan completamente organizado y decidido de antemano. 'Going to' es la opción correcta."
-      },
-      {
-        question: "The phone is ringing. I ___ get it.",
-        options: ["am going to", "will", "getting"],
-        correct: "will",
-        explanation: "Es una decisión tomada en el momento exacto en el que suena el teléfono. Para decisiones instantáneas se usa 'will'."
-      },
-      {
-        question: "Next year, I ___ be 18 years old.",
-        options: ["am going to", "will", "am"],
-        correct: "will",
-        explanation: "Para hablar de hechos futuros o cosas que son inevitables (como la edad o el paso del tiempo), se usa 'will'."
-      },
-      {
-        question: "She ___ have a baby in December. The doctor confirmed it.",
-        options: ["will", "is going to", "has"],
-        correct: "is going to",
-        explanation: "Es un hecho futuro basado en evidencia clínica presente confirmada. Por lo tanto, 'going to' es necesario aquí."
-      }
-    ]
-  },
-  'reflexive-pronouns': {
-    title: 'Reflexive Pronouns',
-    questions: [
-      {
-        question: "I cut ___ while cooking dinner.",
-        options: ["me", "myself", "mine"],
-        correct: "myself",
-        explanation: "El sujeto (I) y el objeto de la acción son la misma persona. Usamos el reflexivo 'myself'."
-      },
-      {
-        question: "She looked at ___ in the mirror.",
-        options: ["her", "herself", "she"],
-        correct: "herself",
-        explanation: "La acción de mirar recae sobre el mismo sujeto (She), por lo que usamos 'herself'. 'Her' indicaría que miró a otra mujer."
-      },
-      {
-        question: "We enjoyed ___ at the party.",
-        options: ["ourselves", "us", "our"],
-        correct: "ourselves",
-        explanation: "'We' requiere el pronombre reflexivo 'ourselves'. 'Us' se usaría si la acción recayera en nosotros pero proveniente de otra persona."
-      },
-      {
-        question: "They fixed the car by ___.",
-        options: ["them", "theirselves", "themselves"],
-        correct: "themselves",
-        explanation: "'Themselves' es la forma correcta para el plural de 'they'. La palabra 'theirselves' no existe en inglés estándar."
-      },
-      {
-        question: "He taught ___ how to play the guitar.",
-        options: ["him", "himself", "his"],
-        correct: "himself",
-        explanation: "Él mismo fue su propio maestro. La acción recae sobre el sujeto (He), requiriendo 'himself'."
-      },
-      {
-        question: "The cat cleaned ___ after eating.",
-        options: ["it", "itself", "himself"],
-        correct: "itself",
-        explanation: "Para animales (cuando no se especifica el género de forma afectiva) o cosas, usamos 'itself'."
-      },
-      {
-        question: "You guys need to do the homework by ___.",
-        options: ["yourself", "yourselves", "you"],
-        correct: "yourselves",
-        explanation: "Al decir 'You guys', queda claro que es plural (ustedes). El reflexivo plural para la segunda persona es 'yourselves'."
-      },
-      {
-        question: "John, I want you to believe in ___.",
-        options: ["yourself", "yourselves", "you"],
-        correct: "yourself",
-        explanation: "Al dirigirse solo a 'John' (singular), el pronombre reflexivo correcto es 'yourself'."
-      },
-      {
-        question: "The machine works by ___.",
-        options: ["it", "itself", "himself"],
-        correct: "itself",
-        explanation: "La máquina es un objeto inanimado que realiza la acción por su cuenta. Le corresponde 'itself'."
-      },
-      {
-        question: "Mary bought a gift for ___.",
-        options: ["her", "herself", "hers"],
-        correct: "herself",
-        explanation: "Mary es el sujeto y al mismo tiempo la receptora del regalo, por lo tanto usamos 'herself'."
-      }
-    ]
-  },
-  'should-shouldnt': {
-    title: "Should and Shouldn't",
-    questions: [
-      {
-        question: "You have a headache. You ___ rest.",
-        options: ["should", "shouldn't", "will"],
-        correct: "should",
-        explanation: "'Should' se usa para dar un buen consejo o sugerencia. Si le duele la cabeza, lo recomendable es descansar."
-      },
-      {
-        question: "It's raining. She ___ forget her umbrella.",
-        options: ["should", "shouldn't", "won't"],
-        correct: "shouldn't",
-        explanation: "El consejo lógico es negativo: no debería olvidar su paraguas porque está lloviendo."
-      },
-      {
-        question: "They ___ eat so much junk food if they want to be fit.",
-        options: ["should", "shouldn't", "are going to"],
-        correct: "shouldn't",
-        explanation: "Comer mucha comida chatarra es malo si quieres estar en forma, así que sugerimos no hacerlo usando 'shouldn't'."
-      },
-      {
-        question: "You ___ brush your teeth twice a day.",
-        options: ["shouldn't", "should", "will"],
-        correct: "should",
-        explanation: "Lavarse los dientes es un buen hábito y una recomendación positiva, por lo que usamos 'should'."
-      },
-      {
-        question: "He looks very tired. He ___ go to bed late.",
-        options: ["should", "shouldn't", "is going to"],
-        correct: "shouldn't",
-        explanation: "Si está cansado, la recomendación es evitar dormir tarde, por lo que 'shouldn't' es la respuesta correcta."
-      },
-      {
-        question: "If you want to learn English, you ___ practice every day.",
-        options: ["should", "shouldn't", "won't"],
-        correct: "should",
-        explanation: "Practicar a diario es una recomendación altamente positiva para lograr el objetivo, así que usamos 'should'."
-      },
-      {
-        question: "We ___ talk loudly in the library.",
-        options: ["should", "shouldn't", "will"],
-        correct: "shouldn't",
-        explanation: "En una biblioteca se exige silencio, por lo tanto 'no deberíamos' (shouldn't) hablar fuerte."
-      },
-      {
-        question: "___ I buy the red shirt or the blue one?",
-        options: ["Should", "Shouldn't", "Will"],
-        correct: "Should",
-        explanation: "Al pedir consejo o sugerencia sobre qué decisión tomar, formulamos la pregunta empezando con 'Should'."
-      },
-      {
-        question: "It's cold outside. You ___ wear a jacket.",
-        options: ["shouldn't", "should", "are going to"],
-        correct: "should",
-        explanation: "Hace frío, lo razonable y aconsejable es usar chamarra, por lo tanto 'should'."
-      },
-      {
-        question: "He ___ drive so fast on this road. It's dangerous.",
-        options: ["should", "shouldn't", "will"],
-        correct: "shouldn't",
-        explanation: "Es peligroso, así que el consejo es negativo: no debería conducir rápido ('shouldn't')."
-      }
-    ]
-  },
-  'question-tags': {
-    title: 'Question Tags',
-    questions: [
-      {
-        question: "You are a student, ___?",
-        options: ["are you", "aren't you", "isn't it"],
-        correct: "aren't you",
-        explanation: "Si la oración principal es afirmativa con el verbo 'to be' (are), el question tag debe ser negativo (aren't) con el mismo pronombre."
-      },
-      {
-        question: "She isn't coming to the party, ___?",
-        options: ["isn't she", "is she", "does she"],
-        correct: "is she",
-        explanation: "La oración es negativa (isn't), por lo que el tag debe ser afirmativo usando el mismo verbo auxiliar (is) y pronombre (she)."
-      },
-      {
-        question: "He plays tennis very well, ___?",
-        options: ["doesn't he", "does he", "isn't he"],
-        correct: "doesn't he",
-        explanation: "La oración está en presente simple afirmativo. Para formar el tag, necesitamos el auxiliar negativo para 'He', que es 'doesn't'."
-      },
-      {
-        question: "They didn't go to school yesterday, ___?",
-        options: ["did they", "didn't they", "do they"],
-        correct: "did they",
-        explanation: "La oración usa pasado simple negativo (didn't). El tag pasa a afirmativo usando el mismo auxiliar en pasado (did)."
-      },
-      {
-        question: "We have finished the project, ___?",
-        options: ["have we", "haven't we", "don't we"],
-        correct: "haven't we",
-        explanation: "Es una oración en presente perfecto afirmativa (have finished), el tag debe ser negativo con el mismo auxiliar (haven't we)."
-      },
-      {
-        question: "You will call me, ___?",
-        options: ["will you", "won't you", "don't you"],
-        correct: "won't you",
-        explanation: "Si se usa 'will' afirmativo, el question tag debe ser la forma negativa 'won't' acompañada del sujeto."
-      },
-      {
-        question: "She can speak English, ___?",
-        options: ["can't she", "can she", "doesn't she"],
-        correct: "can't she",
-        explanation: "Para los verbos modales como 'can', se usa el mismo modal en negativo para el tag ('can't')."
-      },
-      {
-        question: "I am late, ___?",
-        options: ["am I not", "aren't I", "amn't I"],
-        correct: "aren't I",
-        explanation: "Excepción importante: Para 'I am' en oraciones afirmativas, el question tag correcto y aceptado en inglés es 'aren't I?' (no existe 'amn't')."
-      },
-      {
-        question: "It was a great movie, ___?",
-        options: ["wasn't it", "was it", "didn't it"],
-        correct: "wasn't it",
-        explanation: "El verbo 'to be' en pasado (was) afirmativo cambia a negativo (wasn't) con el sujeto 'it'."
-      },
-      {
-        question: "Let's go to the beach, ___?",
-        options: ["will we", "shall we", "don't we"],
-        correct: "shall we",
-        explanation: "Excepción importante: Todas las oraciones que empiezan con 'Let's' (sugerencias) usan siempre 'shall we?' como question tag."
-      }
-    ]
-  }
-};
+    <script type="text/babel">
+        const { useState, useEffect } = React;
 
-export default function App() {
-  const [currentView, setCurrentView] = useState('menu'); // 'menu', 'quiz', 'summary'
-  const [selectedTopic, setSelectedTopic] = useState(null);
-  
-  // Estado activo del quiz
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [correctCount, setCorrectCount] = useState(0);
-  const [incorrectCount, setIncorrectCount] = useState(0);
-  
-  // Estado para la pregunta actual
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [isAnswered, setIsAnswered] = useState(false);
-  
-  // Estado de las sesiones guardadas para la regla de los 10 segundos
-  const [savedSessions, setSavedSessions] = useState({});
+        const quizData = {
+            reflexive: {
+                title: "Reflexive Pronouns",
+                questions: [
+                    { q: "I cut ___ while chopping onions.", options: ["me", "myself", "himself", "mine"], a: "myself", exp: "La acción recae sobre el mismo sujeto (I)." },
+                    { q: "She looked at ___ in the mirror.", options: ["her", "hers", "herself", "she"], a: "herself", exp: "El sujeto es 'She', por lo tanto usamos 'herself'." },
+                    { q: "We built this treehouse by ___.", options: ["ourselves", "us", "our", "themselves"], a: "ourselves", exp: "'We' requiere el reflexivo plural 'ourselves'." },
+                    { q: "The cat is washing ___.", options: ["it", "itself", "himself", "its"], a: "itself", exp: "Para animales de género desconocido o cosas, usamos 'itself'." },
+                    { q: "Did you guys make dinner all by ___?", options: ["yourself", "yourselves", "you", "yours"], a: "yourselves", exp: "Como es plural ('you guys'), se usa 'yourselves'." },
+                    { q: "He taught ___ to play the guitar.", options: ["him", "his", "himself", "he"], a: "himself", exp: "El sujeto 'He' requiere el reflexivo 'himself'." },
+                    { q: "They paid for ___ at the restaurant.", options: ["them", "themselves", "their", "theirs"], a: "themselves", exp: "'They' requiere 'themselves'." },
+                    { q: "Please, help ___ to some cake, John.", options: ["yourself", "yourselves", "you", "yours"], a: "yourself", exp: "Es singular, dirigiéndose a una sola persona (John)." },
+                    { q: "The machine turns ___ off automatically.", options: ["it", "its", "itself", "himself"], a: "itself", exp: "'The machine' es un objeto, por lo que usamos 'itself'." },
+                    { q: "I don't need help, I can do it ___.", options: ["me", "mine", "myself", "my"], a: "myself", exp: "Indica que el sujeto (I) hace la acción sin ayuda." }
+                ]
+            },
+            future: {
+                title: "Will vs Going to",
+                questions: [
+                    { q: "Look at those dark clouds! It ___ rain.", options: ["will", "is going to", "going to", "wills"], a: "is going to", exp: "Usamos 'going to' para predicciones basadas en evidencia visual presente (las nubes)." },
+                    { q: "I think humanity ___ live on Mars in 2050.", options: ["is going to", "will", "are going to", "would"], a: "will", exp: "Para predicciones futuras basadas en opiniones o creencias, usamos 'will'." },
+                    { q: "I don't have my wallet! - Don't worry, I ___ pay.", options: ["am going to", "will", "pay", "am to"], a: "will", exp: "Usamos 'will' para decisiones espontáneas tomadas en el momento de hablar." },
+                    { q: "We ___ visit our grandparents this weekend. We bought the tickets.", options: ["will", "are going to", "is going to", "shall"], a: "are going to", exp: "Se usa 'going to' porque ya hay un plan o arreglo previo (compraron boletos)." },
+                    { q: "Watch out! You ___ drop those plates!", options: ["will", "are going to", "going", "would"], a: "are going to", exp: "Es una situación inminente con evidencia clara; usamos 'are going to'." },
+                    { q: "I promise I ___ tell anyone your secret.", options: ["am not going to", "won't", "don't will", "willn't"], a: "won't", exp: "Para promesas se usa 'will' (o 'won't' en negativo)." },
+                    { q: "What ___ do after you graduate?", options: ["will you", "are you going to", "do you", "you will"], a: "are you going to", exp: "Pregunta sobre planes a futuro o intenciones." },
+                    { q: "The phone is ringing. I ___ get it.", options: ["will", "am going to", "getting", "get"], a: "will", exp: "Decisión rápida o reacción en el momento de hablar." },
+                    { q: "She ___ have a baby in December.", options: ["will", "is going to", "going to", "shall"], a: "is going to", exp: "Es un hecho a futuro basado en evidencia actual (el embarazo)." },
+                    { q: "Maybe I ___ study French next year.", options: ["am going to", "will", "gonna", "am will"], a: "will", exp: "Expresa una posibilidad futura sin un plan firme ('maybe')." }
+                ]
+            },
+            modals: {
+                title: "Should & Shouldn't",
+                questions: [
+                    { q: "You have a headache. You ___ rest.", options: ["should", "shouldn't", "would", "mustn't"], a: "should", exp: "Se usa 'should' para dar un buen consejo." },
+                    { q: "It's raining. She ___ forget her umbrella.", options: ["should", "shouldn't", "can't", "might"], a: "shouldn't", exp: "Es una mala idea olvidar el paraguas, por lo que usamos 'shouldn't'." },
+                    { q: "They ___ eat so much junk food if they want to be fit.", options: ["should", "shouldn't", "could", "would"], a: "shouldn't", exp: "Recomendación negativa para evitar malos hábitos." },
+                    { q: "You ___ brush your teeth twice a day.", options: ["shouldn't", "should", "couldn't", "will"], a: "should", exp: "Es un consejo general de salud." },
+                    { q: "He looks tired. He ___ go to bed late.", options: ["should", "shouldn't", "can", "has"], a: "shouldn't", exp: "Consejo negativo; no es recomendable que duerma tarde." },
+                    { q: "If you want to learn English, you ___ practice daily.", options: ["should", "shouldn't", "don't", "didn't"], a: "should", exp: "Es la mejor sugerencia para lograr un objetivo." },
+                    { q: "We ___ talk loudly in the library.", options: ["should", "shouldn't", "shoulds", "must"], a: "shouldn't", exp: "Da un consejo sobre el comportamiento adecuado en un lugar." },
+                    { q: "___ I buy the red shirt or the blue one?", options: ["Shouldn't", "Could", "Should", "Would"], a: "Should", exp: "Para pedir un consejo o sugerencia se inicia la pregunta con 'Should'." },
+                    { q: "It's freezing outside. You ___ wear a jacket.", options: ["should", "shouldn't", "shoulds", "can't"], a: "should", exp: "Consejo positivo para protegerse del clima." },
+                    { q: "People ___ throw trash in the ocean.", options: ["should", "shouldn't", "can", "might"], a: "shouldn't", exp: "Es una recomendación ética/moral fuerte." }
+                ]
+            },
+            tags: {
+                title: "Question Tags",
+                questions: [
+                    { q: "You are a student, ___?", options: ["are you", "aren't you", "do you", "don't you"], a: "aren't you", exp: "Oración positiva usa tag negativo. Verbo 'are' -> 'aren't you'." },
+                    { q: "She isn't coming to the party, ___?", options: ["isn't she", "does she", "is she", "has she"], a: "is she", exp: "Oración negativa usa tag positivo. 'isn't' -> 'is she'." },
+                    { q: "He plays tennis very well, ___?", options: ["doesn't he", "does he", "isn't he", "plays he"], a: "doesn't he", exp: "Presente simple positivo requiere auxiliar negativo 'doesn't he'." },
+                    { q: "They didn't go to school, ___?", options: ["did they", "didn't they", "do they", "were they"], a: "did they", exp: "Pasado simple negativo requiere auxiliar positivo 'did they'." },
+                    { q: "We have finished the project, ___?", options: ["don't we", "have we", "haven't we", "didn't we"], a: "haven't we", exp: "Presente perfecto (have finished) usa el mismo auxiliar en negativo: 'haven't we'." },
+                    { q: "You will call me, ___?", options: ["will you", "won't you", "don't you", "aren't you"], a: "won't you", exp: "El tag negativo de 'will' es 'won't'." },
+                    { q: "I am late, ___?", options: ["am not I", "aren't I", "don't I", "isn't I"], a: "aren't I", exp: "Excepción gramatical: El tag de 'I am' siempre es 'aren't I'." },
+                    { q: "Let's go to the beach, ___?", options: ["don't we", "will we", "shall we", "are we"], a: "shall we", exp: "Excepción: Para sugerencias con 'Let's', el tag correcto es 'shall we'." },
+                    { q: "It was a great movie, ___?", options: ["wasn't it", "was it", "didn't it", "isn't it"], a: "wasn't it", exp: "Pasado del verbo to be 'was' -> 'wasn't it'." },
+                    { q: "Nobody called, ___?", options: ["did they", "didn't they", "did nobody", "didn't nobody"], a: "did they", exp: "Excepción: 'Nobody' es negativo, así que el tag es positivo, y se usa el pronombre 'they'." }
+                ]
+            }
+        };
 
-  // Manejar el inicio o recuperación de un quiz
-  const handleStartQuiz = (topicKey) => {
-    const session = savedSessions[topicKey];
-    const now = Date.now();
-    
-    // Verificar si hay una sesión previa y si pasó menos de 10 segundos (10,000 ms)
-    if (session && now - session.exitTimestamp <= 10000) {
-      setCurrentIndex(session.currentIndex);
-      setCorrectCount(session.correctCount);
-      setIncorrectCount(session.incorrectCount);
-    } else {
-      // Reiniciar todo si no hay sesión o pasaron más de 10 segundos
-      setCurrentIndex(0);
-      setCorrectCount(0);
-      setIncorrectCount(0);
-    }
-    
-    setSelectedTopic(topicKey);
-    setSelectedOption(null);
-    setIsAnswered(false);
-    setCurrentView('quiz');
-  };
+        function App() {
+            const [view, setView] = useState('menu'); 
+            const [topic, setTopic] = useState(null);
+            const [currentQ, setCurrentQ] = useState(0);
+            const [correct, setCorrect] = useState(0);
+            const [wrong, setWrong] = useState(0);
+            const [selected, setSelected] = useState(null);
+            const [isAnswered, setIsAnswered] = useState(false);
+            const [session, setSession] = useState(null);
 
-  // Guardar estado al salir al menu
-  const handleBackToMenu = () => {
-    if (currentView === 'quiz') {
-      setSavedSessions(prev => ({
-        ...prev,
-        [selectedTopic]: {
-          currentIndex,
-          correctCount,
-          incorrectCount,
-          exitTimestamp: Date.now()
-        }
-      }));
-    }
-    setCurrentView('menu');
-  };
-
-  // Manejar la selección de una respuesta
-  const handleOptionClick = (option) => {
-    if (isAnswered) return;
-    
-    setSelectedOption(option);
-    setIsAnswered(true);
-    
-    const correct = quizData[selectedTopic].questions[currentIndex].correct;
-    if (option === correct) {
-      setCorrectCount(prev => prev + 1);
-    } else {
-      setIncorrectCount(prev => prev + 1);
-    }
-  };
-
-  // Manejar avanzar a la siguiente pregunta o terminar
-  const handleNextQuestion = () => {
-    if (currentIndex < quizData[selectedTopic].questions.length - 1) {
-      setCurrentIndex(prev => prev + 1);
-      setSelectedOption(null);
-      setIsAnswered(false);
-    } else {
-      // Borrar la sesión guardada al completar el quiz para que se reinicie si lo vuelven a tomar
-      setSavedSessions(prev => {
-        const newSessions = { ...prev };
-        delete newSessions[selectedTopic];
-        return newSessions;
-      });
-      setCurrentView('summary');
-    }
-  };
-
-  // ================= RENDER DE VISTAS =================
-
-  // VISTA: Menú Principal
-  if (currentView === 'menu') {
-    return (
-      <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
-          <h1 className="text-3xl font-bold text-center text-slate-800 mb-8">Examen de Gramática</h1>
-          <p className="text-center text-slate-500 mb-6">Selecciona un tema para comenzar (10 preguntas por tema).</p>
-          <div className="space-y-4">
-            {Object.entries(quizData).map(([key, data]) => (
-              <button
-                key={key}
-                onClick={() => handleStartQuiz(key)}
-                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 transform hover:scale-105"
-              >
-                {data.title}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // VISTA: Resumen (Final del quiz)
-  if (currentView === 'summary') {
-    return (
-      <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center">
-          <h2 className="text-3xl font-bold text-slate-800 mb-4">¡Has terminado!</h2>
-          <p className="text-xl mb-6">Puntaje final: <span className="font-bold text-indigo-600">{correctCount} / 10</span></p>
-          
-          <div className="flex justify-center space-x-4 mb-8">
-            <div className="bg-green-100 text-green-700 px-4 py-2 rounded-lg font-semibold">
-              Correctas: {correctCount}
-            </div>
-            <div className="bg-red-100 text-red-700 px-4 py-2 rounded-lg font-semibold">
-              Incorrectas: {incorrectCount}
-            </div>
-          </div>
-          
-          <button
-            onClick={handleBackToMenu}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
-          >
-            Volver al Menú Principal
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // VISTA: Quiz Activo
-  const currentQuestionData = quizData[selectedTopic].questions[currentIndex];
-
-  return (
-    <div className="min-h-screen bg-slate-100 flex flex-col items-center py-10 px-4">
-      <div className="max-w-2xl w-full">
-        
-        {/* Barra Superior */}
-        <div className="flex justify-between items-center bg-white p-4 rounded-t-xl shadow-sm border-b">
-          <button 
-            onClick={handleBackToMenu}
-            className="text-indigo-600 hover:text-indigo-800 font-medium text-sm flex items-center transition"
-          >
-            ← Volver al Menú
-          </button>
-          <div className="flex space-x-3 text-sm font-semibold">
-            <span className="text-green-600 bg-green-50 px-2 py-1 rounded">Correctas: {correctCount}</span>
-            <span className="text-red-600 bg-red-50 px-2 py-1 rounded">Incorrectas: {incorrectCount}</span>
-          </div>
-        </div>
-
-        {/* Contenido de la Pregunta */}
-        <div className="bg-white p-8 rounded-b-xl shadow-lg">
-          <div className="text-sm text-slate-400 font-medium mb-2 uppercase tracking-wide">
-            {quizData[selectedTopic].title} - Pregunta {currentIndex + 1} de 10
-          </div>
-          <h2 className="text-2xl font-bold text-slate-800 mb-6">
-            {currentQuestionData.question}
-          </h2>
-
-          <div className="space-y-3 mb-6">
-            {currentQuestionData.options.map((option, index) => {
-              // Lógica de estilos de botones
-              let btnClass = "w-full text-left font-medium py-3 px-5 rounded-lg border-2 transition-all duration-200 ";
-              
-              if (!isAnswered) {
-                btnClass += "border-slate-200 hover:border-indigo-500 hover:bg-indigo-50 text-slate-700";
-              } else {
-                if (option === currentQuestionData.correct) {
-                  btnClass += "border-green-500 bg-green-500 text-white"; // La correcta siempre en verde
-                } else if (option === selectedOption) {
-                  btnClass += "border-red-500 bg-red-500 text-white"; // La mala que seleccionó, en rojo
+            const startQuiz = (key) => {
+                if (session && session.topic === key && (Date.now() - session.time < 10000)) {
+                    setTopic(session.topic);
+                    setCurrentQ(session.currentQ);
+                    setCorrect(session.correct);
+                    setWrong(session.wrong);
                 } else {
-                  btnClass += "border-slate-200 bg-slate-100 text-slate-400 opacity-60"; // Las demás deshabilitadas visualmente
+                    setTopic(key);
+                    setCurrentQ(0);
+                    setCorrect(0);
+                    setWrong(0);
                 }
-              }
+                setSession(null);
+                setSelected(null);
+                setIsAnswered(false);
+                setView('quiz');
+            };
 
-              return (
-                <button
-                  key={index}
-                  disabled={isAnswered}
-                  onClick={() => handleOptionClick(option)}
-                  className={btnClass}
-                >
-                  {option}
-                </button>
-              );
-            })}
-          </div>
+            const backToMenu = () => {
+                setSession({
+                    topic, currentQ, correct, wrong, time: Date.now()
+                });
+                setView('menu');
+            };
 
-          {/* Retroalimentación (Se muestra solo tras responder) */}
-          {isAnswered && (
-            <div className={`p-4 rounded-lg mb-6 text-sm font-medium ${selectedOption === currentQuestionData.correct ? 'bg-green-100 text-green-800 border-l-4 border-green-500' : 'bg-red-100 text-red-800 border-l-4 border-red-500'}`}>
-              <p className="mb-1 font-bold text-base">
-                {selectedOption === currentQuestionData.correct ? '¡Correcto!' : 'Incorrecto'}
-              </p>
-              <p>{currentQuestionData.explanation}</p>
-            </div>
-          )}
+            const handleAnswer = (option) => {
+                if (isAnswered) return;
+                setSelected(option);
+                setIsAnswered(true);
+                const actualAnswer = quizData[topic].questions[currentQ].a;
+                if (option === actualAnswer) {
+                    setCorrect(prev => prev + 1);
+                } else {
+                    setWrong(prev => prev + 1);
+                }
+            };
 
-          {/* Botón Siguiente */}
-          {isAnswered && (
-            <div className="flex justify-end">
-              <button
-                onClick={handleNextQuestion}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg transition"
-              >
-                {currentIndex === 9 ? 'Ver Resultados' : 'Siguiente Pregunta'}
-              </button>
-            </div>
-          )}
-        </div>
-        
-        {/* Aviso de la regla de los 10 segundos */}
-        <p className="text-center text-xs text-slate-400 mt-4">
-          * Si vuelves al menú y regresas al mismo quiz antes de 10 segundos, tu progreso no se perderá.
-        </p>
+            const nextQuestion = () => {
+                if (currentQ < 9) {
+                    setCurrentQ(prev => prev + 1);
+                    setSelected(null);
+                    setIsAnswered(false);
+                } else {
+                    setView('results');
+                }
+            };
 
-      </div>
-    </div>
-  );
-}
+            if (view === 'menu') {
+                return (
+                    <div className="bg-white p-8 rounded-xl shadow-lg mt-10">
+                        <h1 className="text-3xl font-bold text-center mb-2">Quiz de Gramática</h1>
+                        <p className="text-center text-gray-500 mb-8">Selecciona un tema para comenzar (10 preguntas por tema)</p>
+                        
+                        {session && (Date.now() - session.time < 10000) && (
+                            <div className="bg-yellow-100 text-yellow-800 p-3 rounded-lg text-sm text-center mb-4 animate-pulse">
+                                Tienes progreso guardado en <b>{quizData[session.topic].title}</b> (Se borrará en unos segundos).
+                            </div>
+                        )}
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {Object.entries(quizData).map(([key, data]) => (
+                                <button 
+                                    key={key} 
+                                    onClick={() => startQuiz(key)}
+                                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-4 px-6 rounded-lg transition shadow-md"
+                                >
+                                    {data.title}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                );
+            }
+
+            if (view === 'results') {
+                return (
+                    <div className="bg-white p-8 rounded-xl shadow-lg mt-10 text-center">
+                        <h2 className="text-3xl font-bold mb-4">¡Has terminado!</h2>
+                        <div className="text-xl mb-6">
+                            <p className="text-green-600 font-bold">Correctas: {correct}</p>
+                            <p className="text-red-600 font-bold">Incorrectas: {wrong}</p>
+                            <p className="text-gray-700 mt-4 text-2xl">Puntaje: {(correct / 10) * 100}%</p>
+                        </div>
+                        <button 
+                            onClick={() => { setSession(null); setView('menu'); }}
+                            className="bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-8 rounded-lg"
+                        >
+                            Volver al Menú Principal
+                        </button>
+                    </div>
+                );
+            }
+
+            const currentData = quizData[topic].questions[currentQ];
+
+            return (
+                <div className="bg-white p-6 md:p-8 rounded-xl shadow-lg mt-10">
+                    <div className="flex justify-between items-center mb-6">
+                        <button onClick={backToMenu} className="text-slate-500 hover:text-slate-800 font-semibold flex items-center">
+                            ← Volver al Menú
+                        </button>
+                        <div className="text-sm font-bold flex gap-4">
+                            <span className="text-green-600">✔ {correct}</span>
+                            <span className="text-red-600">✖ {wrong}</span>
+                        </div>
+                    </div>
+
+                    <div className="mb-6">
+                        <span className="text-indigo-600 font-bold text-sm uppercase tracking-wide">{quizData[topic].title} - Pregunta {currentQ + 1} de 10</span>
+                        <h2 className="text-2xl font-semibold mt-2">{currentData.q}</h2>
+                    </div>
+
+                    <div className="space-y-3 mb-6">
+                        {currentData.options.map((opt, i) => {
+                            let btnClass = "w-full text-left font-medium py-3 px-5 rounded-lg border-2 transition-all duration-200 ";
+                            
+                            if (!isAnswered) {
+                                btnClass += "border-slate-200 hover:border-indigo-500 hover:bg-indigo-50 text-slate-700";
+                            } else {
+                                if (opt === currentData.a) {
+                                    btnClass += "border-green-500 bg-green-50 text-green-800"; // Correcta
+                                } else if (opt === selected) {
+                                    btnClass += "border-red-500 bg-red-50 text-red-800"; // Seleccionada incorrecta
+                                } else {
+                                    btnClass += "border-slate-100 bg-slate-50 text-slate-400 opacity-60"; // Demás opciones
+                                }
+                            }
+
+                            return (
+                                <button key={i} onClick={() => handleAnswer(opt)} className={btnClass} disabled={isAnswered}>
+                                    {opt}
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    {isAnswered && (
+                        <div className={`p-4 rounded-lg mb-6 ${selected === currentData.a ? 'bg-green-100 text-green-900' : 'bg-red-100 text-red-900'}`}>
+                            <p className="font-bold text-lg">{selected === currentData.a ? '¡Correcto!' : 'Incorrecto'}</p>
+                            <p className="mt-1">{currentData.exp}</p>
+                        </div>
+                    )}
+
+                    {isAnswered && (
+                        <button onClick={nextQuestion} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition-colors">
+                            {currentQ === 9 ? 'Ver Resultados' : 'Siguiente Pregunta'}
+                        </button>
+                    )}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
